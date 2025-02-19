@@ -1,9 +1,24 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=line-too-long
 # flake8: noqa
+import os
+import pandas as pd
 """
 Escriba el codigo que ejecute la accion solicitada en cada pregunta.
 """
+
+def generate_csv(ruta, target):
+    texts = []
+    # Recorrer todos los archivos en la carpeta
+    for file_name in os.listdir(ruta):
+            file_path = os.path.join(ruta, file_name)
+            
+            with open(file_path, "r", encoding="utf-8") as file:
+                content = file.read()
+                texts.append(content)
+            
+    df = pd.DataFrame([[text, target] for text in texts], columns=["phrase", "target"])
+    return df
 
 
 def pregunta_01():
@@ -22,7 +37,7 @@ def pregunta_01():
             0000.txt
             0001.txt
             ...
-        positive/
+        positive/u
             0000.txt
             0001.txt
             ...
@@ -69,5 +84,40 @@ def pregunta_01():
     |  4 | Tampere Science Parks is a Finnish company that owns , leases and builds office properties and it specialises in facilities for technology-oriented businesses         | neutral  |
     ```
 
-
     """
+
+    # Definir etiquetas y listas para almacenar los DataFrames
+    targets = ["negative", "neutral", "positive"]
+    csvs_train = []
+
+    # Generar archivos CSV de entrenamiento
+    for target in targets:
+        csvs_train.append(generate_csv("./files/input/train/"+target, target))
+
+    train_csv = pd.concat(csvs_train, ignore_index=True)
+
+    csvs_test = []
+    for target in targets:
+        csvs_test.append(generate_csv("./files/input/test/"+target, target))
+
+    test_csv = pd.concat(csvs_test, ignore_index=True)
+
+    # Definir rutas
+    save_rute = "./files/output"
+    filename_train = "train_dataset.csv"
+    filename_test = "test_dataset.csv"
+
+    # Crear la carpeta si no existe
+    os.makedirs(save_rute, exist_ok=True)
+
+    # Guardar los archivos CSV con la ruta correcta
+    train_csv.to_csv(os.path.join(save_rute, filename_train), index=False, encoding="utf-8")
+    test_csv.to_csv(os.path.join(save_rute, filename_test), index=False, encoding="utf-8")
+
+    print(f"Archivos guardados en: {save_rute}")
+
+   
+         
+
+
+pregunta_01()
